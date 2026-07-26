@@ -71,7 +71,7 @@ export default function EquivClassList(props: {methods: Method[], onRemove: any,
     }
 
     function onSubmit() {
-        if (props.methods.find(m => m.equivClasses.length > 0)) {
+        if (props.methods.find(m => (m.equivClasses || []).length > 0)) {
             props.showGenerateTests();
         } else {
             setShowValidationError(true);
@@ -125,7 +125,7 @@ export default function EquivClassList(props: {methods: Method[], onRemove: any,
             </Accordion>
                         
             {
-                avaliableMethods?.map(m => m.equivClasses.map(ec => 
+                avaliableMethods?.map(m => (m.equivClasses || []).map(ec =>
                                                                 <Entry 
                                                                     key={ec.identifier}
                                                                     method={m.name} 

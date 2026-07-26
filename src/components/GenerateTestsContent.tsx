@@ -91,6 +91,7 @@ export default function GenerateTestsContent(props: {
       })
       .catch(async (error) => {
         const message = await getRequestErrorMessage(error);
+        console.error('Error generating tests:', message);
         setGenResult(`An error occurred while generating tests: ${message}`);
         return undefined;
       })
@@ -113,21 +114,25 @@ export default function GenerateTestsContent(props: {
       ...method,
       equivClasses: method.equivClasses || [],
     }));
-    const equivalenceClasses = methodsWithEquivalenceClasses.flatMap((method) => {
-  if (!method.equivClasses.length) {
-    return [{
-      methodIdentifier: method.identifier,
-      methodName: method.name,
-      equivalenceClass: null,
-    }];
-  }
+    const equivalenceClasses = methodsWithEquivalenceClasses.flatMap(
+      (method) => {
+        if (!method.equivClasses.length) {
+          return [
+            {
+              methodIdentifier: method.identifier,
+              methodName: method.name,
+              equivalenceClass: null,
+            },
+          ];
+        }
 
-  return method.equivClasses.map((equivClass) => ({
-    ...equivClass,
-    methodIdentifier: method.identifier,
-    methodName: method.name,
-  }));
-});
+        return method.equivClasses.map((equivClass) => ({
+          ...equivClass,
+          methodIdentifier: method.identifier,
+          methodName: method.name,
+        }));
+      },
+    );
 
     if (equivalenceClasses.length === 0) {
       setGenResult('Please provide at least one Equivalence Class');

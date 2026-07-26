@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { v1 as uuidv1 } from 'uuid';
 import ValidationErrorSnackbar from './ValidationErrorComponent';
 import { API_BASE_URL } from '../config/api';
+import { convertSuggestedEquivalenceClasses } from './equiv-classes/suggestedEquivalenceClasses';
 
 export default function UserStoryContent(props: {
   setMethods: any;
@@ -69,18 +70,26 @@ export default function UserStoryContent(props: {
       .then((response) => {
         console.log('response=', response.data);
 
-        const convertedMethods = response.data.map((item: any) => ({
-          identifier: uuidv1(),
-          name: item.nome,
-          className: item.nomeClasse,
-          returnType: item.tipoRetorno,
-          equivClasses: [],
-          parameters: item.parametros.map((p: any) => ({
+        const convertedMethods = response.data.map((item: any) => {
+          const parameters = item.parametros.map((p: any) => ({
             identifier: uuidv1(),
             name: p.nome,
             type: p.tipo,
-          })),
-        }));
+          }));
+
+          return {
+            identifier: uuidv1(),
+            name: item.nome,
+            className: item.nomeClasse,
+            returnType: item.tipoRetorno,
+            equivClasses: convertSuggestedEquivalenceClasses(
+              item.classesEquivalencia,
+              parameters,
+              item.tipoRetorno,
+            ),
+            parameters,
+          };
+        });
 
         setMethods(convertedMethods);
         setIsLoading(false);
