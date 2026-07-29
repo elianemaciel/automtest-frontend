@@ -28,7 +28,7 @@ import ParametersRange from './ParametersRange';
 import { StringRangeComponent } from './range/StringRange';
 import ValidationErrorSnackbar from '../ValidationErrorComponent';
 import { StringRangePieceType } from '../../models/StringDataRange';
-import { API_BASE_URL } from '../../config/api';
+import { API_BASE_URL, getApiHeaders } from '../../config/api';
 
 type AiEquivalenceClass = {
   type?: string;
@@ -338,9 +338,9 @@ export default function EquivClassCreateOrUpdate(props: {
           methods: [currentMethod],
         }),
         {
-          headers: {
+          headers: getApiHeaders({
             'Content-Type': 'application/json',
-          },
+          }),
         },
       )
       .then((response) => {

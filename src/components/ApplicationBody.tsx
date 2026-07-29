@@ -16,6 +16,7 @@ export default function ApplicationBody() {
   const [methods, setMethods] = useState<Method[]>([]);
   const [userStory, setUserStory] = useState('');
   const [selectedIA, setSelectedIA] = useState('gemini');
+  const [isBackendActive, setIsBackendActive] = useState(false);
   //     {
   //         identifier: '1',
   //         name: 'isMinorAge',
@@ -284,6 +285,11 @@ export default function ApplicationBody() {
 
   const height = '650px';
   const width = '960px';
+  const visibleMenuButtons = menuButtons.map((buttonState) => ({
+    ...buttonState,
+    enabled: buttonState.enabled && !isBackendActive,
+  }));
+
   return (
     <div
       style={{
@@ -297,7 +303,10 @@ export default function ApplicationBody() {
         overflowX: 'hidden',
       }}
     >
-      <ApplicationMenu buttonsState={menuButtons} selectButton={selectButton} />
+      <ApplicationMenu
+        buttonsState={visibleMenuButtons}
+        selectButton={selectButton}
+      />
       <div style={{ marginInlineStart: '24px', width: '100%' }}>
         {selectedMenuOption === MenuButton.ABOUT ? (
           <AboutPage />
@@ -308,6 +317,7 @@ export default function ApplicationBody() {
             selectedIA={selectedIA}
             setSelectedIA={setSelectedIA}
             setMethods={setMethods}
+            setBackendActive={setIsBackendActive}
             showMethodsListContent={() => selectButton(MenuButton.METHOD_INFO)}
           />
         ) : selectedMenuOption === MenuButton.METHOD_INFO ? (
@@ -326,7 +336,11 @@ export default function ApplicationBody() {
             showGenerateTests={() => selectButton(MenuButton.GENERATE_TEST)}
           />
         ) : (
-          <GenerateTestsContent methods={methods} selectedIA={selectedIA} />
+          <GenerateTestsContent
+            methods={methods}
+            selectedIA={selectedIA}
+            setBackendActive={setIsBackendActive}
+          />
         )}
       </div>
     </div>
