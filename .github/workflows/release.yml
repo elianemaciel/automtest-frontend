@@ -54,7 +54,7 @@ jobs:
           AUTOMTEST_API_KEY: ${{ secrets.AUTOMTEST_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node -e 'const fs = require("fs"); const env = { AUTOMTEST_BACKEND_URL: process.env.AUTOMTEST_BACKEND_URL || "", AUTOMTEST_API_KEY: process.env.AUTOMTEST_API_KEY || process.env.API_KEY || "", NODE_ENV: "production" }; const content = Object.entries(env).map(([key, value]) => `${key}=${value}`).join("\n") + "\n"; fs.writeFileSync(".env", content); fs.appendFileSync(process.env.GITHUB_ENV, content);'
+          node -e 'const fs = require("fs"); const env = { AUTOMTEST_BACKEND_URL: process.env.AUTOMTEST_BACKEND_URL || "", AUTOMTEST_API_KEY: process.env.AUTOMTEST_API_KEY || process.env.API_KEY || "", NODE_ENV: "production" }; const content = Object.entries(env).map(([key, value]) => `${key}=${value}`).join("\n") + "\n"; fs.writeFileSync(".env", content); const ciEnv = Object.fromEntries(Object.entries(env).filter(([key]) => key !== "NODE_ENV")); fs.appendFileSync(process.env.GITHUB_ENV, Object.entries(ciEnv).map(([key, value]) => `${key}=${value}`).join("\n") + "\n");'
 
       - name: Install dependencies
         run: npm ci
