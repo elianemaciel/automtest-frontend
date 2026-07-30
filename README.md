@@ -1,5 +1,5 @@
 
-# AutomTest 3.0
+# AutomTest 4.0
 Towards a Test Case Generation Tool Based on Functional Requirements.   
 Article for it's first version:
 https://dl.acm.org/doi/10.1145/3439961.3440002
