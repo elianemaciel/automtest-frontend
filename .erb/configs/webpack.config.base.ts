@@ -54,6 +54,8 @@ const configuration: webpack.Configuration = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
       AUTOMTEST_BACKEND_URL: '',
+      AUTOMTEST_API_KEY: '',
+      API_KEY: '',
     }),
   ],
 };

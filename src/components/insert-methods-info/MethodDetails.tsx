@@ -2,7 +2,7 @@ import { Method } from "../../models/Method";
 import { useState } from "react";
 import { Parameter, parameterToString } from "../../models/Parameter";
 import { buildTextField } from "../CustomComponents";
-import { Button, Grid } from "@mui/material";
+import { Button, Chip, Grid } from "@mui/material";
 import ParamChip from "./ParamChip";
 
 export default function MethodDetails(props: {method: Method, onRemove: (methodId: string) => void, onEdit: () => void}) {
@@ -78,6 +78,33 @@ export default function MethodDetails(props: {method: Method, onRemove: (methodI
                             width: '98%',
                             }}>
                             <ParamChip parameters={props.method.parameters} />
+                        </div>
+                        <div style={{color: 'black', fontSize: '12px', marginTop: '10px'}}>
+                            Suggested equivalence classes
+                        </div>
+                        <div style={{
+                            border: '1px solid rgba(1, 1, 1, 0.5)',
+                            borderRadius: 4,
+                            minHeight: '32px',
+                            padding: 5,
+                            width: '98%',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '5px',
+                        }}>
+                            {(props.method.equivClasses || []).length > 0
+                                ? (props.method.equivClasses || []).map((equivClass) => (
+                                    <Chip
+                                        key={equivClass.identifier}
+                                        label={equivClass.name}
+                                        size="small"
+                                        variant="outlined"
+                                        color="success"
+                                    />
+                                ))
+                                : <span style={{color: 'rgba(1, 1, 1, 0.6)', fontSize: '12px'}}>
+                                    No suggested equivalence classes
+                                  </span>}
                         </div>
                     </div>
                 </div>

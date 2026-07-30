@@ -5,13 +5,21 @@ import {
   Stack,
   Text1,
   Text3,
-  Text5,
 } from '@telefonica/mistica';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { v1 as uuidv1 } from 'uuid';
 import ValidationErrorSnackbar from './ValidationErrorComponent';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, getApiHeaders } from '../config/api';
+import { convertSuggestedEquivalenceClasses } from './equiv-classes/suggestedEquivalenceClasses';
+
+const USER_STORY_PLACEHOLDER = `Example:
+As a customer, I want to reset my password so that I can regain access to my account.
+
+Acceptance Criteria:
+Given I am on the password reset page
+When I enter a registered email and submit the form
+Then the system should send a password reset link to my email`;
 
 export default function UserStoryContent(props: {
   setMethods: any;
@@ -20,6 +28,7 @@ export default function UserStoryContent(props: {
   setUserStory: any;
   selectedIA: string;
   setSelectedIA: any;
+  setBackendActive: (active: boolean) => void;
 }) {
   const {
     setMethods,
@@ -28,6 +37,7 @@ export default function UserStoryContent(props: {
     setUserStory: setParentUserStory,
     selectedIA,
     setSelectedIA,
+    setBackendActive,
   } = props;
   const [userStory, setUserStory] = useState(initialUserStory);
   const [language, setLanguage] = useState('pt');
@@ -59,35 +69,48 @@ export default function UserStoryContent(props: {
 
   function generateMethods(userStory: string, language: string) {
     console.log('Generating methods...');
+    setBackendActive(true);
 
     axios
-      .post(`${API_BASE_URL}/api/process_user_story`, {
-        lang: language,
-        userStory,
-        selectedIA,
-      })
+      .post(
+        `${API_BASE_URL}/api/process_user_story`,
+        {
+          lang: language,
+          userStory,
+          selectedIA,
+        },
+        {
+          headers: getApiHeaders(),
+        },
+      )
       .then((response) => {
         console.log('response=', response.data);
 
-        const convertedMethods = response.data.map((item: any) => ({
-          identifier: uuidv1(),
-          name: item.nome,
-          className: item.nomeClasse,
-          returnType: item.tipoRetorno,
-          equivClasses: [],
-          parameters: item.parametros.map((p: any) => ({
+        const convertedMethods = response.data.map((item: any) => {
+          const parameters = item.parametros.map((p: any) => ({
             identifier: uuidv1(),
             name: p.nome,
             type: p.tipo,
-          })),
-        }));
+          }));
+
+          return {
+            identifier: uuidv1(),
+            name: item.nome,
+            className: item.nomeClasse,
+            returnType: item.tipoRetorno,
+            equivClasses: convertSuggestedEquivalenceClasses(
+              item.classesEquivalencia,
+              parameters,
+              item.tipoRetorno,
+            ),
+            parameters,
+          };
+        });
 
         setMethods(convertedMethods);
-        setIsLoading(false);
         showMethodsListContent();
       })
       .catch((error) => {
-        setIsLoading(false);
         setShowError(true);
         setErrorMessage(
           `${error.code}: ${
@@ -95,6 +118,10 @@ export default function UserStoryContent(props: {
           }`,
         );
         console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setBackendActive(false);
       });
   }
 
@@ -149,17 +176,20 @@ export default function UserStoryContent(props: {
         </div>
       ) : (
         <Stack space={24}>
-          <Text5 color="black">
-            Paste below the User Story you want to convert:
-          </Text5>
+          <Text3 regular color="black">
+            Insert a User Story with its Acceptance Criteria. <br />
+            Then, select the language and LLM to start the automated generation
+            process.
+          </Text3>
           <textarea
             id="multilineTextInput"
             value={userStory}
+            placeholder={USER_STORY_PLACEHOLDER}
             onChange={(event) => {
               setUserStory(event.target.value);
             }}
-            rows={24}
-            cols={81}
+            rows={20}
+            cols={71}
             style={{
               borderRadius: '5px',
               color: 'black',
@@ -169,38 +199,45 @@ export default function UserStoryContent(props: {
               backgroundColor: 'transparent',
             }}
           />
-          <div style={{ display: 'flex', margin: '24px', width: '100%' }}>
-            <RadioGroup
-              name="radio-group"
-              onChange={setLanguage}
-              defaultValue="pt"
-            >
-              <div style={{ marginInlineEnd: '24px' }}>
-                <RadioButton value="pt">
-                  <Text3 regular color="black">
-                    Português
-                  </Text3>
-                </RadioButton>
-              </div>
-              <div>
-                <RadioButton value="en">
-                  <Text3 regular color="black">
-                    English
-                  </Text3>
-                </RadioButton>
-              </div>
-            </RadioGroup>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '24px',
+              marginTop: '24px',
+              width: '100%',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <RadioGroup
+                name="radio-group"
+                onChange={setLanguage}
+                defaultValue="pt"
+              >
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, auto)',
+                    columnGap: '8px',
+                    rowGap: '8px',
+                    alignItems: 'center',
+                    marginBottom: '20px',
+                  }}
+                >
+                  <RadioButton value="pt">
+                    <Text1 regular color="black">
+                      Português
+                    </Text1>
+                  </RadioButton>
+                  <RadioButton value="en">
+                    <Text1 regular color="black">
+                      English
+                    </Text1>
+                  </RadioButton>
+                </div>
+              </RadioGroup>
 
-            <div
-              style={{
-                marginInlineStart: '24px',
-                width: '490px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                marginInlineEnd: '24px',
-              }}
-            >
               <RadioGroup
                 name="radio-ia"
                 onChange={setSelectedIA}
@@ -209,7 +246,7 @@ export default function UserStoryContent(props: {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(4, auto)',
+                    gridTemplateColumns: 'repeat(3, auto)',
                     columnGap: '8px',
                     rowGap: '8px',
                     alignItems: 'center',
@@ -233,36 +270,27 @@ export default function UserStoryContent(props: {
                   </RadioButton>
                 </div>
               </RadioGroup>
-
-              <Button
-                variant="outlined"
-                color="primary"
-                disableElevation
-                style={{
-                  width: 80,
-                  // backgroundColor: '#2d516f',
-                  padding: '10px',
-                  marginBottom: '0px',
-                  //     display: 'flex',
-                  //     justifyContent: 'center',
-                  //     alignItems: 'center',
-                  //     minHeight: '80px',
-                  //     fontWeight: 'bold',
-                  // color: 'white',
-                  //    // backgroundColor: buttonState.isCurrentlyActive ? selectedButtonColor : unselectedButtonColor
-                }}
-                onClick={() => {
-                  if (validateUserStory()) {
-                    setIsLoading(true);
-                    generateMethods(userStory, language);
-                  } else {
-                    // alert("Pr");
-                  }
-                }}
-              >
-                Submit Story
-              </Button>
             </div>
+
+            <Button
+              variant="contained"
+              disableElevation
+              style={{
+                minWidth: 120,
+                backgroundColor: '#2d516f',
+                color: 'white',
+                padding: '10px',
+                marginRight: '12px',
+              }}
+              onClick={() => {
+                if (validateUserStory()) {
+                  setIsLoading(true);
+                  generateMethods(userStory, language);
+                }
+              }}
+            >
+              Submit
+            </Button>
           </div>
         </Stack>
       )}

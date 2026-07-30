@@ -4,13 +4,14 @@ import { Button } from '@mui/material';
 import axios from 'axios';
 import { Method } from '../models/Method';
 import ValidationErrorSnackbar from './ValidationErrorComponent';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, getApiHeaders } from '../config/api';
 
 export default function GenerateTestsContent(props: {
   methods: Method[];
   selectedIA: string;
+  setBackendActive: (active: boolean) => void;
 }) {
-  const { methods, selectedIA } = props;
+  const { methods, selectedIA, setBackendActive } = props;
   const [showError, setShowError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [genResult, setGenResult] = useState('');
@@ -71,13 +72,14 @@ export default function GenerateTestsContent(props: {
     }
 
     setIsGeneratingFile(true);
+    setBackendActive(true);
 
     // eslint-disable-next-line promise/catch-or-return
     axios
       .post(`${API_BASE_URL}/api/generate_tests`, JSON.stringify({ methods }), {
-        headers: {
+        headers: getApiHeaders({
           'Content-Type': 'application/json',
-        },
+        }),
         responseType: 'blob',
       })
       .then(async (response) => {
@@ -91,11 +93,13 @@ export default function GenerateTestsContent(props: {
       })
       .catch(async (error) => {
         const message = await getRequestErrorMessage(error);
+        console.error('Error generating tests:', message);
         setGenResult(`An error occurred while generating tests: ${message}`);
         return undefined;
       })
       .finally(() => {
         setIsGeneratingFile(false);
+        setBackendActive(false);
       });
   }
 
@@ -113,21 +117,25 @@ export default function GenerateTestsContent(props: {
       ...method,
       equivClasses: method.equivClasses || [],
     }));
-    const equivalenceClasses = methodsWithEquivalenceClasses.flatMap((method) => {
-  if (!method.equivClasses.length) {
-    return [{
-      methodIdentifier: method.identifier,
-      methodName: method.name,
-      equivalenceClass: null,
-    }];
-  }
+    const equivalenceClasses = methodsWithEquivalenceClasses.flatMap(
+      (method) => {
+        if (!method.equivClasses.length) {
+          return [
+            {
+              methodIdentifier: method.identifier,
+              methodName: method.name,
+              equivalenceClass: null,
+            },
+          ];
+        }
 
-  return method.equivClasses.map((equivClass) => ({
-    ...equivClass,
-    methodIdentifier: method.identifier,
-    methodName: method.name,
-  }));
-});
+        return method.equivClasses.map((equivClass) => ({
+          ...equivClass,
+          methodIdentifier: method.identifier,
+          methodName: method.name,
+        }));
+      },
+    );
 
     if (equivalenceClasses.length === 0) {
       setGenResult('Please provide at least one Equivalence Class');
@@ -135,6 +143,7 @@ export default function GenerateTestsContent(props: {
     }
 
     setIsGeneratingWithAI(true);
+    setBackendActive(true);
 
     // eslint-disable-next-line promise/catch-or-return
     axios
@@ -148,9 +157,9 @@ export default function GenerateTestsContent(props: {
           targetLanguage: 'java',
         }),
         {
-          headers: {
+          headers: getApiHeaders({
             'Content-Type': 'application/json',
-          },
+          }),
           responseType: 'blob',
         },
       )
@@ -172,6 +181,7 @@ export default function GenerateTestsContent(props: {
       })
       .finally(() => {
         setIsGeneratingWithAI(false);
+        setBackendActive(false);
       });
   }
 

@@ -1,5 +1,5 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, TextField } from "@mui/material";
-import { Stack, Text5 } from "@telefonica/mistica";
+import { Stack, Text3 } from "@telefonica/mistica";
 import { Method } from "../../models/Method";
 import { useEffect, useState } from "react";
 import ValidationErrorSnackbar from "../ValidationErrorComponent";
@@ -71,7 +71,7 @@ export default function EquivClassList(props: {methods: Method[], onRemove: any,
     }
 
     function onSubmit() {
-        if (props.methods.find(m => m.equivClasses.length > 0)) {
+        if (props.methods.find(m => (m.equivClasses || []).length > 0)) {
             props.showGenerateTests();
         } else {
             setShowValidationError(true);
@@ -105,7 +105,7 @@ export default function EquivClassList(props: {methods: Method[], onRemove: any,
                     // expandIcon={<ArrowDropDownIcon />}
                     aria-controls="panel1-content">
                 <Grid container justifyContent="flex-end" spacing={1}>
-                    <Grid item xs={9}><Text5 color="black">List of all Equivalence Classes created:</Text5></Grid>
+                    <Grid item xs={9}><Text3 color="black">Review and manage your generated Equivalence Classes</Text3></Grid>
                     <Grid item xs={3}>
                         <Button 
                             variant="outlined" 
@@ -125,7 +125,7 @@ export default function EquivClassList(props: {methods: Method[], onRemove: any,
             </Accordion>
                         
             {
-                avaliableMethods?.map(m => m.equivClasses.map(ec => 
+                avaliableMethods?.map(m => (m.equivClasses || []).map(ec =>
                                                                 <Entry 
                                                                     key={ec.identifier}
                                                                     method={m.name} 

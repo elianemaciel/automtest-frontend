@@ -1,4 +1,4 @@
-import { Stack, Text5 } from "@telefonica/mistica";
+import { Stack, Text3 } from "@telefonica/mistica";
 import { Method } from "../../models/Method";
 import MethodDetails from "./MethodDetails";
 import { ContentType } from "./ContentType";
@@ -13,8 +13,8 @@ export default function MethodList(props: {
         showEquivClassesList: any,
     }) {
 
-    const empty_methods = "Define the signatures of the methods your application will have:";
-    const non_empty_methods = "Manage the signatures of each method and continue once you are done:";
+    const empty_methods = "Generated methods will appear here. You can also add a method manually before continuing:";
+    const non_empty_methods = "Review the generated methods below. You can edit, remove, or add methods before continuing:";
 
     const [methods, setMethods] = useState<Method[]>([])
     const [showValidationError, setShowValidationError] = useState(false);
@@ -56,7 +56,7 @@ export default function MethodList(props: {
         <div>
             <ValidationErrorSnackbar open={showValidationError} message={validationErrorMsg} changeOpenState={() => setShowValidationError(!showValidationError)} />
             <Stack space={12}>
-                <Text5 color="black">{methods.length == 0 ? empty_methods : non_empty_methods}</Text5>
+                <Text3 regular color="black">{methods.length == 0 ? empty_methods : non_empty_methods}</Text3>
                 <div style={{
                     height: '460px',
                     overflowY: 'auto',
