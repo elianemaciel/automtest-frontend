@@ -4,7 +4,7 @@ Frontend for AutomTest 4.0, a tool that supports test case generation from funct
 
 ## Download the compiled version
 
-You can download the compiled version of AutomTest 3.0 Frontend directly from the repository's **Releases** page.
+You can download the compiled version of AutomTest 4.0 Frontend directly from the repository's **Releases** page.
 
 On the Releases page, choose the latest version and download the file for your operating system.
 
